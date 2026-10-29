@@ -1,0 +1,149 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/space-grotesk';
+
+/*
+ * FitForge design tokens.
+ * Components use semantic names (bg-surface, text-muted, bg-accent ...), never raw colours,
+ * so the light theme is just a second set of values below.
+ */
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0f1112;
+  --surface: #16191b;
+  --surface-2: #1d2124;
+  --surface-3: #252a2e;
+  --border: #2b3135;
+  --border-strong: #3a4146;
+  --fg: #f2f2ee;
+  --muted: #9ca3a8;
+  --subtle: #6b7378;
+  --accent: #c6f432;          /* electric lime */
+  --accent-hover: #d4ff4d;
+  --accent-fg: #0f1112;       /* text on lime */
+  --accent-text: #c6f432;     /* lime used as text/links */
+  --accent-soft: rgb(198 244 50 / 0.12);
+  --danger: #ff6b6b;
+  --danger-soft: rgb(255 107 107 / 0.12);
+  --warning: #ffb547;
+  --warning-soft: rgb(255 181 71 / 0.12);
+  --success: #4ade80;
+  --success-soft: rgb(74 222 128 / 0.12);
+  --info: #60a5fa;
+  --info-soft: rgb(96 165 250 / 0.12);
+  --ring: rgb(198 244 50 / 0.55);
+  --shadow: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 12px 32px -16px rgb(0 0 0 / 0.6);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f5f5f0;
+  --surface: #ffffff;
+  --surface-2: #f0f0ea;
+  --surface-3: #e7e7df;
+  --border: #e0e0d7;
+  --border-strong: #c9c9bd;
+  --fg: #15181a;
+  --muted: #586066;
+  --subtle: #858c91;
+  --accent: #c6f432;
+  --accent-hover: #b8e61f;
+  --accent-fg: #15181a;
+  --accent-text: #4a6b06;     /* darker lime: readable on white (WCAG AA) */
+  --accent-soft: rgb(132 184 12 / 0.14);
+  --danger: #d63b3b;
+  --danger-soft: rgb(214 59 59 / 0.1);
+  --warning: #b86e00;
+  --warning-soft: rgb(184 110 0 / 0.1);
+  --success: #15803d;
+  --success-soft: rgb(21 128 61 / 0.1);
+  --info: #1d63c4;
+  --info-soft: rgb(29 99 196 / 0.1);
+  --ring: rgb(110 160 10 / 0.5);
+  --shadow: 0 1px 2px rgb(16 24 16 / 0.05), 0 10px 30px -18px rgb(16 24 16 / 0.25);
+}
+
+@theme inline {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Space Grotesk Variable', 'Inter Variable', ui-sans-serif, sans-serif;
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-text: var(--accent-text);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-ring: var(--ring);
+
+  --shadow-card: var(--shadow);
+  --radius-card: 1rem;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply min-h-dvh bg-bg font-sans text-fg;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display tracking-tight;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-fg);
+  }
+
+  /* Visible keyboard focus everywhere; mouse clicks don't show the ring. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Subtle diagonal grid used behind the auth screens and empty states. */
+  .bg-grid {
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  }
+}
