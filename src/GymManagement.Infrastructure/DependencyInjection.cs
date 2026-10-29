@@ -4,6 +4,7 @@ using GymManagement.Infrastructure.Data;
 using GymManagement.Infrastructure.Data.Seed;
 using GymManagement.Infrastructure.Identity;
 using GymManagement.Infrastructure.Services;
+using GymManagement.Infrastructure.Services.Common;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -65,11 +66,32 @@ public static class DependencyInjection
         services.Configure<FrontendOptions>(configuration.GetSection(FrontendOptions.SectionName));
         services.Configure<SeedOptions>(configuration.GetSection(SeedOptions.SectionName));
 
+        services.Configure<GymOptions>(configuration.GetSection(GymOptions.SectionName));
+
+        // Cross-cutting
         services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<IGymClock, GymClock>();
+        services.AddSingleton<IEmailSender, LoggingEmailSender>();
+        services.AddScoped<IAuditService, AuditService>();
+        services.AddScoped<AccessControl>();
+        services.AddScoped<UserAccountFactory>();
+
+        // Authentication
         services.AddScoped<JwtTokenGenerator>();
         services.AddScoped<RefreshTokenService>();
         services.AddScoped<IAuthService, AuthService>();
-        services.AddSingleton<IEmailSender, LoggingEmailSender>();
+
+        // Feature services
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IMemberService, MemberService>();
+        services.AddScoped<ITrainerService, TrainerService>();
+        services.AddScoped<IMembershipPlanService, MembershipPlanService>();
+        services.AddScoped<IMembershipService, MembershipService>();
+        services.AddScoped<IPaymentService, PaymentService>();
+        services.AddScoped<IWorkoutPlanService, WorkoutPlanService>();
+        services.AddScoped<IDietPlanService, DietPlanService>();
+        services.AddScoped<IClassService, ClassService>();
+        services.AddScoped<IAttendanceService, AttendanceService>();
 
         services.AddHealthChecks().AddDbContextCheck<AppDbContext>("database");
 

@@ -2,8 +2,10 @@
 
 Full-stack gym management system built with ASP.NET Core Web API (.NET 10), Entity Framework Core, SQL Server and React (Vite + TypeScript).
 
-> Work in progress. Completed so far: architecture, database (EF Core Code-First), and authentication
-> (JWT access tokens, rotating refresh tokens, role-based authorization).
+> Work in progress. Completed so far: architecture, database (EF Core Code-First), authentication
+> (JWT access tokens, rotating refresh tokens, role-based authorization) and the REST API for members,
+> trainers, membership plans, memberships, payments, workout and diet plans, classes, bookings and attendance,
+> with resource-level authorization so members and trainers only reach their own records.
 
 ## Quick start (development)
 

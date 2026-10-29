@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using GymManagement.Api.Authorization;
 using GymManagement.Api.Extensions;
 using GymManagement.Api.Filters;
@@ -10,7 +11,15 @@ using GymManagement.Infrastructure.Data.Seed;
 var builder = WebApplication.CreateBuilder(args);
 
 // ---------- Services ----------
-builder.Services.AddControllers(options => options.Filters.Add<ValidationFilter>());
+builder.Services
+    .AddControllers(options =>
+    {
+        options.Filters.Add<ValidationFilter>();
+        // FluentValidation owns all field rules, so every validation error has the same camelCase format.
+        options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+    })
+    // Enums travel as readable strings ("Upi", "Monday", "Active") instead of numbers.
+    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddOpenApi();
 
 builder.Services.AddProblemDetails();

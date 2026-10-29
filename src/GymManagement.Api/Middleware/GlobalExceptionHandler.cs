@@ -1,6 +1,8 @@
 using GymManagement.Application.Common.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 
 namespace GymManagement.Api.Middleware;
 
@@ -23,6 +25,9 @@ public sealed class GlobalExceptionHandler(
             ForbiddenException => (StatusCodes.Status403Forbidden, "Forbidden"),
             NotFoundException => (StatusCodes.Status404NotFound, "Not found"),
             ConflictException => (StatusCodes.Status409Conflict, "Conflict"),
+            // Safety net: a unique index caught a duplicate the service didn't (e.g. two identical requests at once).
+            DbUpdateException { InnerException: SqlException { Number: 2601 or 2627 } }
+                => (StatusCodes.Status409Conflict, "Conflict"),
             _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred")
         };
 
@@ -38,7 +43,13 @@ public sealed class GlobalExceptionHandler(
 
         problem.Status = status;
         problem.Title = title;
-        problem.Detail = status == StatusCodes.Status500InternalServerError ? null : exception.Message;
+        problem.Detail = exception switch
+        {
+            AppException => exception.Message,
+            DbUpdateException when status == StatusCodes.Status409Conflict
+                => "This conflicts with existing data. Refresh and try again.",
+            _ => null // never expose internal error messages
+        };
 
         httpContext.Response.StatusCode = status;
         return await problemDetailsService.TryWriteAsync(new ProblemDetailsContext
