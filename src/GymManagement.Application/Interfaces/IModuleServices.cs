@@ -1,6 +1,7 @@
 using GymManagement.Application.Common;
 using GymManagement.Application.DTOs.Audit;
 using GymManagement.Application.DTOs.Billing;
+using GymManagement.Application.DTOs.Dashboard;
 using GymManagement.Application.DTOs.People;
 using GymManagement.Application.DTOs.Training;
 
@@ -99,6 +100,17 @@ public interface IClassService
     Task CancelMyBookingAsync(int classId, CancellationToken ct = default);
     Task<PagedResult<ClassBookingDto>> ListMyBookingsAsync(MyBookingsQuery query, CancellationToken ct = default);
     Task<IReadOnlyList<ClassRosterEntryDto>> GetRosterAsync(int classId, CancellationToken ct = default);
+}
+
+public interface IDashboardService
+{
+    Task<AdminDashboardDto> GetAdminAsync(CancellationToken ct = default);
+
+    /// <summary>The signed-in trainer's own dashboard.</summary>
+    Task<TrainerDashboardDto> GetTrainerAsync(CancellationToken ct = default);
+
+    /// <summary>The signed-in member's own dashboard.</summary>
+    Task<MemberDashboardDto> GetMemberAsync(CancellationToken ct = default);
 }
 
 public interface IAuditLogService

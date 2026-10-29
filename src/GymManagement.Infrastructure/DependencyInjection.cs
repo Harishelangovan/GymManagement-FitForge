@@ -93,6 +93,7 @@ public static class DependencyInjection
         services.AddScoped<IClassService, ClassService>();
         services.AddScoped<IAttendanceService, AttendanceService>();
         services.AddScoped<IAuditLogService, AuditLogService>();
+        services.AddScoped<IDashboardService, DashboardService>();
 
         services.AddHealthChecks().AddDbContextCheck<AppDbContext>("database");
 
