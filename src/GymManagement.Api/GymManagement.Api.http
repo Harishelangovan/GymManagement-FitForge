@@ -1,0 +1,7 @@
+@baseUrl = http://localhost:5080
+
+### Health check (database connectivity)
+GET {{baseUrl}}/health
+
+### OpenAPI document (development only)
+GET {{baseUrl}}/openapi/v1.json
