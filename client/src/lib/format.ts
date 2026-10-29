@@ -39,6 +39,44 @@ export function formatDay(date: string, style: 'short' | 'long' = 'short'): stri
   ).format(value)
 }
 
+const GYM_UTC_OFFSET = '+05:30' // Asia/Kolkata has no daylight saving time
+
+/** "2026-10-30" + "07:00" (gym time) → UTC ISO string for the API. */
+export function gymLocalToUtc(date: string, time: string): string {
+  return new Date(`${date}T${time}:00${GYM_UTC_OFFSET}`).toISOString()
+}
+
+/** UTC ISO → { date: "2026-10-30", time: "07:00" } in gym time, for date/time inputs. */
+export function utcToGymLocal(isoUtc: string): { date: string; time: string } {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: GYM_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(new Date(isoUtc))
+  const part = (type: string) => parts.find((p) => p.type === type)?.value ?? ''
+  return { date: `${part('year')}-${part('month')}-${part('day')}`, time: `${part('hour')}:${part('minute')}` }
+}
+
+/** Today's gym-local date, yyyy-MM-dd. */
+export const gymToday = () => gymDateOf(new Date().toISOString())
+
+/** Adds days to a yyyy-MM-dd date. */
+export function addDays(date: string, days: number): string {
+  const d = new Date(`${date}T12:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + days)
+  return d.toISOString().slice(0, 10)
+}
+
+/** Monday of the week containing the given yyyy-MM-dd date. */
+export function startOfWeek(date: string): string {
+  const day = new Date(`${date}T12:00:00Z`).getUTCDay() // 0 = Sunday
+  return addDays(date, -((day + 6) % 7))
+}
+
 /** The gym-local calendar date (yyyy-MM-dd) of a UTC timestamp. */
 export function gymDateOf(isoUtc: string): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: GYM_TIME_ZONE }).format(new Date(isoUtc))

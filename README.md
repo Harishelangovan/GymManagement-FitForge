@@ -8,9 +8,10 @@ Full-stack gym management system built with ASP.NET Core Web API (.NET 10), Enti
 > with resource-level authorization so members and trainers only reach their own records.
 > Hardened with rate limiting, strict CORS, security headers, audit logging of admin actions and security
 > events, structured logging (Serilog) and Swagger documentation.
-> The React frontend has its design system, routing, role-based layouts, the full sign-in experience
-> (login, registration, password reset and change) and live dashboards for admins, trainers and members
-> (KPIs, revenue and membership charts, attendance, schedules, today's workout); feature screens are next.
+> The React frontend covers every role end to end: sign-in flows, live dashboards, member and trainer
+> management, membership plans, memberships and payments, workout and diet plan editors, a weekly class
+> schedule with booking and attendance, and an audit log viewer. Automated test suites and final
+> documentation are next.
 
 ## Quick start (development)
 

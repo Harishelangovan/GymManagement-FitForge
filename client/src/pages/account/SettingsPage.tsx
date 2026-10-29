@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQuery } from '@tanstack/react-query'
 import { Mail, ShieldCheck } from 'lucide-react'
 import { useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
@@ -6,16 +7,20 @@ import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { authApi } from '@/api/auth'
+import { errorMessage } from '@/api/errors'
+import { membersApi } from '@/api/resources'
 import { useAuth, useCurrentUser } from '@/auth/authContext'
+import { MemberProfileForm } from '@/components/forms/MemberForms'
 import { PasswordChecklist } from '@/components/PasswordChecklist'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
-import { Alert, Avatar, Badge } from '@/components/ui/Feedback'
+import { Alert, Avatar, Badge, Skeleton } from '@/components/ui/Feedback'
 import { Field } from '@/components/ui/Field'
 import { fieldProps } from '@/components/ui/fieldProps'
 import { PasswordInput } from '@/components/ui/Input'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { applyServerErrors } from '@/lib/forms'
+import { useApiMutation } from '@/lib/mutations'
 import { passwordSchema } from '@/lib/validation'
 
 const changePasswordSchema = z
@@ -57,7 +62,29 @@ export function SettingsPage() {
 
         <ChangePasswordCard />
       </div>
+      {user.role === 'Member' && <MemberDetailsCard />}
     </>
+  )
+}
+
+/** Members edit their own personal details here (the API only accepts the permitted fields). */
+function MemberDetailsCard() {
+  const user = useCurrentUser()
+  const { updateUser } = useAuth()
+  const member = useQuery({ queryKey: ['member', 'me'], queryFn: membersApi.mine })
+  const save = useApiMutation(membersApi.updateMine, {
+    invalidate: [['member']],
+    toastErrors: false,
+    success: 'Your details were saved.',
+    // Keep the name in the top bar in sync.
+    onSuccess: (m) => updateUser({ ...user, firstName: m.firstName, lastName: m.lastName }),
+  })
+
+  return (
+    <Card className="mt-6">
+      <CardHeader title="Your details" description="Shared with your trainer to plan your training. Only you and gym staff can see them." />
+      <CardBody>{member.isPending ? <Skeleton className="h-64" /> : member.isError ? <Alert tone="danger">{errorMessage(member.error)}</Alert> : <MemberProfileForm member={member.data} onSave={(input) => save.mutateAsync(input)} />}</CardBody>
+    </Card>
   )
 }
 

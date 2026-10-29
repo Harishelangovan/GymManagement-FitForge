@@ -1,4 +1,4 @@
-import { Construction, SearchX, ShieldAlert, TriangleAlert, type LucideIcon } from 'lucide-react'
+import { SearchX, ShieldAlert, TriangleAlert, type LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { isRouteErrorResponse, Link, useRouteError } from 'react-router'
 import { Logo } from '@/components/brand/Logo'
@@ -69,19 +69,5 @@ export function RouteErrorPage() {
         />
       </Card>
     </div>
-  )
-}
-
-/** Placeholder for screens that a later phase builds. */
-export function ComingSoonPage({ title, phase }: { title: string; phase: number }) {
-  return (
-    <Card>
-      <EmptyState
-        icon={Construction}
-        title={`${title} is on its way`}
-        description={`This screen is built in Phase ${phase}. The API behind it is already live.`}
-        action={homeLink}
-      />
-    </Card>
   )
 }
