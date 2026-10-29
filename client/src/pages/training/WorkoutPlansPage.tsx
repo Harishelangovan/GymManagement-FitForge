@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Dumbbell, Pencil, Plus, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { errorMessage } from '@/api/errors'
@@ -265,22 +265,35 @@ function WorkoutPlanEditor({ plan, presetMember, onClose }: { plan: WorkoutPlan 
               const firstError = e?.name?.message ?? e?.sets?.message ?? e?.reps?.message ?? e?.weightKg?.message ?? e?.restSeconds?.message ?? e?.notes?.message
               return (
                 <div key={field.id} className={cn('rounded-xl border border-border bg-surface-2 p-3', e && 'border-danger/50')}>
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-[8rem_1fr_4.5rem_4.5rem_5.5rem_5rem_auto]">
-                    <Select aria-label={`Exercise ${index + 1} day`} {...register(`exercises.${index}.dayOfWeek`)}>
-                      {DAYS_OF_WEEK.map((d) => (
-                        <option key={d} value={d}>
-                          {d}
-                        </option>
-                      ))}
-                    </Select>
-                    <Input aria-label={`Exercise ${index + 1} name`} placeholder="Exercise" aria-invalid={e?.name ? true : undefined} {...register(`exercises.${index}.name`)} />
-                    <Input aria-label="Sets" placeholder="Sets" type="number" min="1" aria-invalid={e?.sets ? true : undefined} {...register(`exercises.${index}.sets`)} />
-                    <Input aria-label="Reps" placeholder="Reps" type="number" min="1" aria-invalid={e?.reps ? true : undefined} {...register(`exercises.${index}.reps`)} />
-                    <Input aria-label="Weight (kg)" placeholder="kg" type="number" min="0" step="0.5" aria-invalid={e?.weightKg ? true : undefined} {...register(`exercises.${index}.weightKg`)} />
-                    <Input aria-label="Rest (seconds)" placeholder="Rest s" type="number" min="0" aria-invalid={e?.restSeconds ? true : undefined} {...register(`exercises.${index}.restSeconds`)} />
-                    <Button variant="ghost" size="icon" aria-label={`Remove exercise ${index + 1}`} onClick={() => remove(index)} disabled={fields.length === 1}>
+                  {/* Day and name get a full row so exercise names stay readable; the numbers sit below with visible labels. */}
+                  <div className="flex gap-2">
+                    <div className="w-28 shrink-0 sm:w-36">
+                      <Select aria-label={`Exercise ${index + 1} day`} {...register(`exercises.${index}.dayOfWeek`)}>
+                        {DAYS_OF_WEEK.map((d) => (
+                          <option key={d} value={d}>
+                            {d}
+                          </option>
+                        ))}
+                      </Select>
+                    </div>
+                    <Input className="min-w-0 flex-1" aria-label={`Exercise ${index + 1} name`} placeholder="Exercise, e.g. Back squat" aria-invalid={e?.name ? true : undefined} {...register(`exercises.${index}.name`)} />
+                    <Button variant="ghost" size="icon" className="shrink-0" aria-label={`Remove exercise ${index + 1}`} onClick={() => remove(index)} disabled={fields.length === 1}>
                       <Trash2 className="size-4" />
                     </Button>
+                  </div>
+                  <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    <NumberCell label="Sets">
+                      <Input aria-label="Sets" type="number" min="1" aria-invalid={e?.sets ? true : undefined} {...register(`exercises.${index}.sets`)} />
+                    </NumberCell>
+                    <NumberCell label="Reps">
+                      <Input aria-label="Reps" type="number" min="1" aria-invalid={e?.reps ? true : undefined} {...register(`exercises.${index}.reps`)} />
+                    </NumberCell>
+                    <NumberCell label="Weight (kg)">
+                      <Input aria-label="Weight (kg)" placeholder="Bodyweight" type="number" min="0" step="0.5" aria-invalid={e?.weightKg ? true : undefined} {...register(`exercises.${index}.weightKg`)} />
+                    </NumberCell>
+                    <NumberCell label="Rest (s)">
+                      <Input aria-label="Rest (seconds)" type="number" min="0" aria-invalid={e?.restSeconds ? true : undefined} {...register(`exercises.${index}.restSeconds`)} />
+                    </NumberCell>
                   </div>
                   <Input className="mt-2" aria-label={`Exercise ${index + 1} notes`} placeholder="Notes (optional), e.g. hold 45 seconds" {...register(`exercises.${index}.notes`)} />
                   {firstError && <p className="mt-1.5 text-xs font-medium text-danger">{firstError}</p>}
@@ -294,5 +307,17 @@ function WorkoutPlanEditor({ plan, presetMember, onClose }: { plan: WorkoutPlan 
         </fieldset>
       </form>
     </Modal>
+  )
+}
+
+/** A small visible caption above a number input, so filled-in values ("5", "60") stay understandable. */
+function NumberCell({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <span aria-hidden className="mb-1 block text-xs text-muted">
+        {label}
+      </span>
+      {children}
+    </div>
   )
 }
