@@ -1,6 +1,7 @@
 using System.Buffers.Text;
 using System.Text;
 using GymManagement.Application.Common.Exceptions;
+using GymManagement.Application.DTOs.Audit;
 using GymManagement.Application.DTOs.Auth;
 using GymManagement.Application.Interfaces;
 using GymManagement.Domain.Common;
@@ -22,6 +23,7 @@ public sealed class AuthService(
     RefreshTokenService refreshTokens,
     ICurrentUser currentUser,
     IEmailSender emailSender,
+    IAuditService audit,
     IOptions<FrontendOptions> frontendOptions,
     TimeProvider timeProvider,
     ILogger<AuthService> logger) : IAuthService
@@ -90,6 +92,8 @@ public sealed class AuthService(
         if (user is null)
         {
             passwordHasher.VerifyHashedPassword(new ApplicationUser(), DummyPasswordHash.Value, request.Password);
+            // The attempted email is not stored: people sometimes type a password into the email field.
+            await RecordSecurityEventAsync(SecurityEvents.LoginFailed, "unknown", new { Reason = "unknown_email" }, ct);
             throw new AuthenticationFailedException();
         }
 
@@ -97,18 +101,31 @@ public sealed class AuthService(
         if (await userManager.IsLockedOutAsync(user))
         {
             logger.LogWarning("Login attempt for locked-out user {UserId}", user.Id);
+            await RecordSecurityEventAsync(SecurityEvents.LoginFailed, user.Id, new { Reason = "locked_out" }, ct);
             throw new AuthenticationFailedException();
         }
 
         if (!await userManager.CheckPasswordAsync(user, request.Password))
         {
             await userManager.AccessFailedAsync(user); // 5 failures → 15-minute lockout
+
+            if (await userManager.IsLockedOutAsync(user))
+            {
+                logger.LogWarning("User {UserId} locked out after repeated failed logins", user.Id);
+                await RecordSecurityEventAsync(SecurityEvents.AccountLockedOut, user.Id, new { user.LockoutEnd }, ct);
+            }
+            else
+            {
+                await RecordSecurityEventAsync(SecurityEvents.LoginFailed, user.Id, new { Reason = "invalid_password" }, ct);
+            }
+
             throw new AuthenticationFailedException();
         }
 
         if (!user.IsActive)
         {
             logger.LogWarning("Login attempt for deactivated user {UserId}", user.Id);
+            await RecordSecurityEventAsync(SecurityEvents.LoginFailed, user.Id, new { Reason = "deactivated" }, ct);
             throw new AuthenticationFailedException();
         }
 
@@ -131,6 +148,7 @@ public sealed class AuthService(
             logger.LogWarning("Refresh token reuse detected for user {UserId}; revoking session {FamilyId}",
                 stored.UserId, stored.FamilyId);
             await refreshTokens.RevokeFamilyAsync(stored.FamilyId, ct);
+            await RecordSecurityEventAsync(SecurityEvents.RefreshTokenReuse, stored.UserId, new { Session = stored.FamilyId }, ct);
             throw new AuthenticationFailedException(SessionExpiredMessage);
         }
 
@@ -183,6 +201,7 @@ public sealed class AuthService(
 
         // Sign out every device. Access tokens already issued expire on their own within 15 minutes.
         await refreshTokens.RevokeAllForUserAsync(user.Id, ct);
+        await RecordSecurityEventAsync(SecurityEvents.PasswordChanged, user.Id, null, ct);
         logger.LogInformation("Password changed for user {UserId}", user.Id);
     }
 
@@ -201,6 +220,8 @@ public sealed class AuthService(
         var encodedToken = Base64Url.EncodeToString(Encoding.UTF8.GetBytes(token));
         var link = $"{frontendOptions.Value.BaseUrl.TrimEnd('/')}/reset-password" +
                    $"?email={Uri.EscapeDataString(user.Email!)}&token={encodedToken}";
+
+        await RecordSecurityEventAsync(SecurityEvents.PasswordResetRequested, user.Id, null, ct);
 
         await emailSender.SendAsync(
             user.Email!,
@@ -243,6 +264,7 @@ public sealed class AuthService(
         await userManager.ResetAccessFailedCountAsync(user);
         await userManager.SetLockoutEndDateAsync(user, null);
         await refreshTokens.RevokeAllForUserAsync(user.Id, ct);
+        await RecordSecurityEventAsync(SecurityEvents.PasswordResetCompleted, user.Id, null, ct);
         logger.LogInformation("Password reset completed for user {UserId}", user.Id);
     }
 
@@ -258,6 +280,13 @@ public sealed class AuthService(
     }
 
     // ---------- helpers ----------
+
+    /// <summary>Writes a security event to the audit log immediately (the request may end in an exception).</summary>
+    private async Task RecordSecurityEventAsync(string action, object userId, object? details, CancellationToken ct)
+    {
+        audit.Record(action, "User", userId, details);
+        await db.SaveChangesAsync(ct);
+    }
 
     /// <summary>
     /// Creates an access token and a new refresh token in the given session family.

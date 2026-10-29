@@ -6,6 +6,8 @@ Full-stack gym management system built with ASP.NET Core Web API (.NET 10), Enti
 > (JWT access tokens, rotating refresh tokens, role-based authorization) and the REST API for members,
 > trainers, membership plans, memberships, payments, workout and diet plans, classes, bookings and attendance,
 > with resource-level authorization so members and trainers only reach their own records.
+> Hardened with rate limiting, strict CORS, security headers, audit logging of admin actions and security
+> events, structured logging (Serilog) and Swagger documentation.
 
 ## Quick start (development)
 
@@ -18,6 +20,6 @@ dotnet user-secrets set "Jwt:SigningKey"      "<random string, 32+ bytes>" --pro
 dotnet run --project src/GymManagement.Api --launch-profile http
 ```
 
-The first run creates the `FitForgeDb` database, roles, the admin `admin@fitforge.test` and demo data. Check `http://localhost:5080/health`.
+The first run creates the `FitForgeDb` database, roles, the admin `admin@fitforge.test` and demo data. Check `http://localhost:5080/health`, and explore the API at `http://localhost:5080/swagger` (sign in with `POST /api/auth/login`, then click **Authorize** and paste the access token).
 
 Setup instructions, screenshots and API documentation will be added as the phases are completed.

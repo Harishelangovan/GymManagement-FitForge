@@ -1,9 +1,11 @@
+using GymManagement.Api.Extensions;
 using GymManagement.Api.Filters;
 using GymManagement.Application.Common.Exceptions;
 using GymManagement.Application.DTOs.Auth;
 using GymManagement.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace GymManagement.Api.Controllers;
 
@@ -15,6 +17,7 @@ public sealed class AuthController(IAuthService authService) : ControllerBase
 
     /// <summary>Creates a Member account and signs it in.</summary>
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Register)]
     [HttpPost("register")]
     [ProducesResponseType<AuthResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -27,9 +30,11 @@ public sealed class AuthController(IAuthService authService) : ControllerBase
     }
 
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Login)]
     [HttpPost("login")]
     [ProducesResponseType<AuthResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<AuthResponse>> Login(LoginRequest request, CancellationToken ct)
     {
         var result = await authService.LoginAsync(request, ct);
@@ -89,6 +94,7 @@ public sealed class AuthController(IAuthService authService) : ControllerBase
 
     /// <summary>Always returns 202, whether or not the email exists.</summary>
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.PasswordReset)]
     [HttpPost("forgot-password")]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request, CancellationToken ct)
@@ -98,6 +104,7 @@ public sealed class AuthController(IAuthService authService) : ControllerBase
     }
 
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.PasswordReset)]
     [HttpPost("reset-password")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]

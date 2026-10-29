@@ -25,6 +25,9 @@ public sealed class GlobalExceptionHandler(
             ForbiddenException => (StatusCodes.Status403Forbidden, "Forbidden"),
             NotFoundException => (StatusCodes.Status404NotFound, "Not found"),
             ConflictException => (StatusCodes.Status409Conflict, "Conflict"),
+            // Raised by Kestrel/ASP.NET for malformed or oversized requests (e.g. 413 when the body exceeds 1 MB).
+            BadHttpRequestException badRequest => (badRequest.StatusCode,
+                badRequest.StatusCode == StatusCodes.Status413PayloadTooLarge ? "Request too large" : "Bad request"),
             // Safety net: a unique index caught a duplicate the service didn't (e.g. two identical requests at once).
             DbUpdateException { InnerException: SqlException { Number: 2601 or 2627 } }
                 => (StatusCodes.Status409Conflict, "Conflict"),
@@ -46,6 +49,8 @@ public sealed class GlobalExceptionHandler(
         problem.Detail = exception switch
         {
             AppException => exception.Message,
+            BadHttpRequestException { StatusCode: StatusCodes.Status413PayloadTooLarge }
+                => "The request body is larger than the 1 MB limit.",
             DbUpdateException when status == StatusCodes.Status409Conflict
                 => "This conflicts with existing data. Refresh and try again.",
             _ => null // never expose internal error messages

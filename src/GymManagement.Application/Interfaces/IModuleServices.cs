@@ -1,4 +1,5 @@
 using GymManagement.Application.Common;
+using GymManagement.Application.DTOs.Audit;
 using GymManagement.Application.DTOs.Billing;
 using GymManagement.Application.DTOs.People;
 using GymManagement.Application.DTOs.Training;
@@ -98,6 +99,12 @@ public interface IClassService
     Task CancelMyBookingAsync(int classId, CancellationToken ct = default);
     Task<PagedResult<ClassBookingDto>> ListMyBookingsAsync(MyBookingsQuery query, CancellationToken ct = default);
     Task<IReadOnlyList<ClassRosterEntryDto>> GetRosterAsync(int classId, CancellationToken ct = default);
+}
+
+public interface IAuditLogService
+{
+    /// <summary>Admin only (enforced by the controller policy). Newest first.</summary>
+    Task<PagedResult<AuditLogDto>> ListAsync(AuditLogQuery query, CancellationToken ct = default);
 }
 
 public interface IAttendanceService
