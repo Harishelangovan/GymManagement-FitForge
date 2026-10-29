@@ -3,5 +3,44 @@
 ### Health check (database connectivity)
 GET {{baseUrl}}/health
 
-### OpenAPI document (development only)
-GET {{baseUrl}}/openapi/v1.json
+### Register a new member (role is always Member)
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "firstName": "New",
+  "lastName": "Member",
+  "email": "new.member@fitforge.test",
+  "password": "Str0ng!Pass",
+  "confirmPassword": "Str0ng!Pass",
+  "phoneNumber": "+91 98765 43210"
+}
+
+### Login (copy accessToken from the response into @token below)
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "rahul.member@fitforge.test",
+  "password": "<demo password from user secrets>"
+}
+
+### Current user
+@token = {{login.response.body.accessToken}}
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{token}}
+
+### Refresh (uses the HttpOnly cookie set by login; the header is required)
+POST {{baseUrl}}/api/auth/refresh
+X-FitForge-Client: web
+
+### Logout
+POST {{baseUrl}}/api/auth/logout
+X-FitForge-Client: web
+
+### Forgot password (in development the reset link is written to the API console)
+POST {{baseUrl}}/api/auth/forgot-password
+Content-Type: application/json
+
+{ "email": "rahul.member@fitforge.test" }

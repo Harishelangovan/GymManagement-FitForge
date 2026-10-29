@@ -2,9 +2,10 @@
 
 Full-stack gym management system built with ASP.NET Core Web API (.NET 10), Entity Framework Core, SQL Server and React (Vite + TypeScript).
 
-> Work in progress. Current status: **Phase 2 (database, entities, migrations, seed data) complete.**
+> Work in progress. Current status: **Phase 3 (authentication and authorization) complete.**
 > - [Phase 1 — Architecture](docs/phase-1-architecture.md)
 > - [Phase 2 — Database setup](docs/phase-2-database.md)
+> - [Phase 3 — Authentication, JWT and refresh tokens](docs/phase-3-authentication.md)
 
 ## Quick start (development)
 
@@ -13,6 +14,7 @@ Requires .NET 10 SDK and SQL Server LocalDB.
 ```powershell
 dotnet user-secrets set "Seed:AdminPassword" "<admin password>" --project src/GymManagement.Api
 dotnet user-secrets set "Seed:DemoPassword"  "<demo password>"  --project src/GymManagement.Api
+dotnet user-secrets set "Jwt:SigningKey"      "<random string, 32+ bytes>" --project src/GymManagement.Api
 dotnet run --project src/GymManagement.Api --launch-profile http
 ```
 

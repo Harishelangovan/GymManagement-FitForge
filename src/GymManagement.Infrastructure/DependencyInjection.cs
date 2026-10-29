@@ -1,6 +1,10 @@
+using GymManagement.Application.Interfaces;
 using GymManagement.Domain.Entities;
 using GymManagement.Infrastructure.Data;
 using GymManagement.Infrastructure.Data.Seed;
+using GymManagement.Infrastructure.Identity;
+using GymManagement.Infrastructure.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,9 +45,31 @@ public static class DependencyInjection
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
             })
             .AddRoles<ApplicationRole>()
-            .AddEntityFrameworkStores<AppDbContext>();
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders(); // password-reset tokens
 
+        // Reset tokens are protected with Data Protection and expire after 30 minutes.
+        services.AddDataProtection();
+        services.Configure<DataProtectionTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromMinutes(30));
+
+        services.AddOptions<JwtOptions>()
+            .Bind(configuration.GetSection(JwtOptions.SectionName))
+            .Validate(o => !string.IsNullOrWhiteSpace(o.Issuer) && !string.IsNullOrWhiteSpace(o.Audience),
+                "Jwt:Issuer and Jwt:Audience are required.")
+            .Validate(o => o.HasValidSigningKey,
+                "Jwt:SigningKey is missing or shorter than 32 bytes. Set it with 'dotnet user-secrets set Jwt:SigningKey <value>'.")
+            .Validate(o => o.AccessTokenMinutes is > 0 and <= 60 && o.RefreshTokenDays is > 0 and <= 30,
+                "Jwt token lifetimes are out of range.")
+            .ValidateOnStart();
+
+        services.Configure<FrontendOptions>(configuration.GetSection(FrontendOptions.SectionName));
         services.Configure<SeedOptions>(configuration.GetSection(SeedOptions.SectionName));
+
+        services.AddSingleton(TimeProvider.System);
+        services.AddScoped<JwtTokenGenerator>();
+        services.AddScoped<RefreshTokenService>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddSingleton<IEmailSender, LoggingEmailSender>();
 
         services.AddHealthChecks().AddDbContextCheck<AppDbContext>("database");
 
