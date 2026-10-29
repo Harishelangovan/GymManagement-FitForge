@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { fileURLToPath, URL } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
@@ -28,6 +29,13 @@ export default defineConfig(({ mode }) => {
           },
         },
       },
+    },
+    test: {
+      // Unit tests for pure helpers (formatting, validation, error mapping). The machine time zone is set
+      // to one far from the gym's, so code that accidentally uses local time fails instead of passing by luck.
+      include: ['src/**/*.test.ts'],
+      environment: 'node',
+      env: { TZ: 'America/New_York' },
     },
     server: {
       port: 5173,

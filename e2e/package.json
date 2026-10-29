@@ -1,0 +1,15 @@
+{
+  "name": "fitforge-e2e",
+  "private": true,
+  "type": "module",
+  "description": "Browser end-to-end checks for FitForge (puppeteer-core + an installed Edge/Chrome).",
+  "scripts": {
+    "test": "node dashboards.e2e.mjs && node workflows.e2e.mjs && node auth.e2e.mjs",
+    "test:auth": "node auth.e2e.mjs",
+    "test:dashboards": "node dashboards.e2e.mjs",
+    "test:workflows": "node workflows.e2e.mjs"
+  },
+  "devDependencies": {
+    "puppeteer-core": "25.16.0"
+  }
+}

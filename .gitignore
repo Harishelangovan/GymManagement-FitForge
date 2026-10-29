@@ -29,3 +29,7 @@ Thumbs.db
 
 # ---------- Local-only project notes (not published) ----------
 docs/
+
+# ---------- End-to-end tests ----------
+e2e/node_modules/
+e2e/shots/
