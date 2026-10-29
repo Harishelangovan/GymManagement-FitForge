@@ -1,0 +1,28 @@
+# ---------- .NET ----------
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.rsuser
+TestResults/
+logs/
+
+# Local secrets and environment-specific settings (never commit)
+appsettings.Local.json
+appsettings.*.Local.json
+*.pfx
+
+# ---------- Node / React ----------
+client/node_modules/
+client/dist/
+client/.env
+client/.env.local
+client/.env.*.local
+
+# ---------- Editors / OS ----------
+.vscode/*
+!.vscode/extensions.json
+.idea/
+Thumbs.db
+.DS_Store
