@@ -2,10 +2,8 @@
 
 Full-stack gym management system built with ASP.NET Core Web API (.NET 10), Entity Framework Core, SQL Server and React (Vite + TypeScript).
 
-> Work in progress. Current status: **Phase 3 (authentication and authorization) complete.**
-> - [Phase 1 — Architecture](docs/phase-1-architecture.md)
-> - [Phase 2 — Database setup](docs/phase-2-database.md)
-> - [Phase 3 — Authentication, JWT and refresh tokens](docs/phase-3-authentication.md)
+> Work in progress. Completed so far: architecture, database (EF Core Code-First), and authentication
+> (JWT access tokens, rotating refresh tokens, role-based authorization).
 
 ## Quick start (development)
 

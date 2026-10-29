@@ -26,3 +26,6 @@ client/.env.*.local
 .idea/
 Thumbs.db
 .DS_Store
+
+# ---------- Local-only project notes (not published) ----------
+docs/
